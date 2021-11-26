@@ -5,11 +5,7 @@ parse-args () {
     shift
     ARGS=$*
 
-    case $CMD in
-        'error') error "$ARGS";;
-
-        *) unknown-command-error;;
-    esac
+    $CMD "$ARGS"
 }
 
 error () {
@@ -23,6 +19,9 @@ unknown-command-error () {
     error "Unknown command"
 }
 
+see-help () {
+	echo "Use option '--help' to list the available commands." 
+}
 parse-args $@
 
 

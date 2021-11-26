@@ -1,9 +1,12 @@
 #!/bin/bash
+USAGE="USAGE : $( basename $0 ) <port-number>"
+
 LIBDIR="./lib/"
 LOGGER="${LIBDIR}logger.sh"
+#ERRLOGS="vsh_server_errlogs.txt"
 
 NETCAT="netcat"
-which $NETCAT >/dev/null && NETCAT="netcat"
+which $NETCAT >/dev/null
 if test $? -ne 0
 then
 	NETCAT="nc"
@@ -15,26 +18,16 @@ then
 	fi
 fi
 
-parse-args () {
-    CMD=$1
-    shift
-    ARGS=$*
-
-    case $CMD in
-    	'start') start $ARGS;;
-
-    	*) $LOGGER 'unknown-command-error';;
-	esac
-}
-
-
 start () (
-	local USAGE="USAGE : $( basename $0 ) start <port-number>"
 	if test $# -eq 1	
 	then
 		local -i PORT="$1"
-		if test "$PORT" -gt 0 2>/dev/null
+		if test "$PORT" -le 0 2>/dev/null
 		then
+			$LOGGER error "The port number must be a positive integer."
+		elif test "$PORT" -lt 1024
+		then	$LOGGER error "Forbidden socket. Choose a minimum port number of 1024."
+		else
 			export PORT
 			export FIFO="/tmp/vsh-server-FIFO-$$"
 			clean() { rm -f "$FIFO"; }
@@ -42,8 +35,6 @@ start () (
 			[ -e $FIFO ] || mknod "$FIFO" p
 			listen
 			
-		else
-			$LOGGER error "The port number must be a positive integer."
 		fi
 	else
 		echo $USAGE
@@ -53,18 +44,13 @@ start () (
 serve() {
     local cmd archive
     while true; do
-	read cmd archive || exit -1
-	case $cmd in
-		'list') echo "T0D0 : list all archives." ;;
-		
-		'create') echo "T0D0 : create archive $archive." ;;
-
-		'browse') echo "T0D0 : browse archive $archive." ;;
-
-		'extract') echo "T0D0 : extract archive $archive." ;;
-
-		*) $LOGGER 'unknown-command-error' ;;
-	esac
+	read cmd archive|| exit -1
+	if [ `type -t $cmd` == 'function' ]
+	then
+		$cmd $archive
+	else
+		$LOGGER 'unknown-command-error'
+	fi
     done
 }
 
@@ -75,4 +61,33 @@ listen () {
 	done
 }
 
-parse-args $@
+list () {
+	echo "T0D0 : list all archives."
+}
+
+create () {
+	echo "T0D0 : create archive $1."
+}
+
+browse () {
+	echo "T0D0 : browse archive $1."
+}
+
+extract () {
+	echo "T0D0 : extract archive $1."
+}
+
+if test $# -eq 1	
+then
+	declare -i PORT="$1"
+	if test "$PORT" -gt 0 2>/dev/null
+	then
+		export PORT
+		start $PORT
+			
+	else
+		$LOGGER error "The port number must be a positive integer."
+	fi
+else
+	echo $USAGE
+fi
