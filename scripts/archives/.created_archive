@@ -1,7 +1,19 @@
-3:9
+3:13
 
-directory Cours\
-Cours Intro PHYS03.pdf  -rwxrwxrwx 3654891
-polyPhys03_Toury.pdf  -rwxrwxrwx 1253888
-Spectre em Toury.pdf  -rwxrwxrwx 15151
+directory test\
+.ohitsasnake  -rwxrwxrwx 20 13 2
+subtest  drwxrwxrwx 0
+toto2  -rwxrwxrwx 0 15 0
+totoro  -rwxrwxrwx 17 15 1
 @
+directory test\subtest\
+tata.txt  -rwxrwxrwx 12 16 2
+toto.txt  -rwxrwxrwx 12 18 2
+@
+ssss im a 
+ssssnake
+ton voisin totoro
+1 2 3
+soleil
+3 2 1
+saloil
