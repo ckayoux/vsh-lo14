@@ -2,16 +2,13 @@
 SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/"
 ARCHIVESDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/archives/" &> /dev/null && pwd )"
 TEMPARCHIVE="${ARCHIVESDIR}/.created_archive"
-ARCHIVESEXT="sos"
+
 USAGE="USAGE : $( basename $0 ) <port-number>"
 
 LIBDIR="${SCRIPTDIR}lib/"
 LOGGER="${LIBDIR}logger.sh"
-DOWNLOAD="${LIBDIR}download.sh"
 CREATE="${LIBDIR}create.sh"
 #ERRLOGS="vsh_server_errlogs.txt"
-
-EOT_SIGNAL="𰻞𰻞麵"
 
 NETCAT="netcat"
 which $NETCAT >/dev/null
@@ -41,7 +38,10 @@ start () (
 			[ -e $FIFO ] || mkfifo "$FIFO"
 			clean() { rm -f "$FIFO";}
 			trap clean EXIT
+			netcat -l -p "$PORT" > "$FIFO" &
+			export NCPID=$!
 			listen
+			
 		fi
 	else
 		echo $USAGE
@@ -51,10 +51,10 @@ start () (
 
 serve() {
     local cmd archive
+	echo $*
 	read cmd archive < "$FIFO" || exit -1
 	if [ `type -t $cmd` == 'function' ]
 	then
-		
 		$cmd $archive
 	else
 		"$LOGGER" 'unknown-command-error'
@@ -64,33 +64,20 @@ serve() {
 listen () {
 	while true
 	do
-		echo "listening"
-		serve < "$FIFO" | netcat -l -p "$PORT" > "$FIFO" #&
+		echo "listening ..."
+		serve < "$FIFO"
 	done
 }
 
 list () {
-	echo -e "\nAvailable archives :"
-	echo "-------------------------------------------"
-	while IFS= read archive
-	do
-		printf " + %s\n" "$archive"
-	done <<< `ls "$ARCHIVESDIR" |grep "\([a-z]\+\.$ARCHIVESEXT\)$"`
-	echo "$EOT_SIGNAL"
+	echo "T0D0 : list all archives."
 }
 
 create () {
-	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
-	local_archive_name=`basename "$1"`
-	read linescount #client sends the archive size in lines
-	"$DOWNLOAD" "$local_archive_path" $linescount
-	if [[ $? -eq 0 ]]
-	then
-		echo "Archive '$local_archive_name' has been created successfully." #afficher ce message au client
-	else
-		"$LOGGER" error "Error creating archive '$local_archive_name'"
-	fi
-	echo "$EOT_SIGNAL"
+	echo "Creating archive $1..." #afficher ce message au client
+	#netcat -l -p "$PORT" > "$ARCHIVESDIR/$1"
+	cat "$FIFO" > "$ARCHIVESDIR/$1"
+	echo "Archive '$1' has been created successfully." #afficher ce message au client
 }
 
 browse () {

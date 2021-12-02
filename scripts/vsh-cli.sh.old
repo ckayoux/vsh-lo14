@@ -7,14 +7,11 @@ TEMPARCHIVE="${ARCHIVESDIR}/.created_archive"
 LIBDIR="${SCRIPTDIR}lib/"
 LOGGER="${LIBDIR}logger.sh"
 CREATE="${LIBDIR}create.sh"
-TRANSMISSION_RECEIVER="${LIBDIR}receive-transmission.sh"
 
 USAGE="CLIENT COMMANDS : list <server_name> <port>, {create|browse|extract} <server_name> <port> <archive_name>"
 
 DEFAULT_SERVER_NAME='localhost'
 DEFAULT_ARCHIVE_PREFIX='archive'
-
-EOT_SIGNAL="𰻞𰻞麵"
 
 NETCAT="netcat"
 which $NETCAT >/dev/null
@@ -29,67 +26,22 @@ then
 	fi
 fi
 
-echo_transmission () {
-	while read line
-	do
-		if [ "$line" == "$EOT_SIGNAL" ]
-		then
-			break
-		else
-			printf "%s\n" "$line"
-		fi
-	done
-}
-
 connect () {
 	export SERVER=$1
 	export PORT=$2
-	echo "Connecting to $SERVER, port $PORT."
-	export OUTGOING="/tmp/vsh-cli-OUTGOING-$$"
-	export INCOMING="/tmp/vsh-cli-INCOMING-$$"
-	clean() { rm -f "$OUTGOING";rm -f "$INCOMING";}
-	[ -e $OUTGOING ] || mknod "$OUTGOING" p
-	[ -e $INCOMING ] || mknod "$INCOMING" p
-	trap clean EXIT
-	netcat "$SERVER" "$PORT" < "$OUTGOING"  > "$INCOMING"  &
-	export NCPID=$!
-	exec 3> "$OUTGOING"
-}
-
-disconnect () {
-	kill $NCPID
-	exec >&3-
+	echo "T0D0 : connect to $SERVER, port $PORT."
 }
 
 list () {
-	echo "list" >&3
-	echo-transmission <"$INCOMING"
-	disconnect
-}
-
-echo-transmission () {
-	while read line
-	do
-		if [ "$line" == "$EOT_SIGNAL" ]
-		then
-			break
-		else
-			echo "$line"
-		fi
-	done
+	echo list |netcat $SERVER $PORT
 }
 
 create () {
 	distant_archive=$1
 	"$CREATE" "$TEMPARCHIVE"
-	echo "create $distant_archive" >&3
-	cat "$TEMPARCHIVE"|wc -l >&3
-	while read -r line
-	do
-		printf "%s\n" "$line" >&3
-	done <"$TEMPARCHIVE"
-	echo-transmission <"$INCOMING" #echoes the servers answer
-	disconnect
+	echo "create $distant_archive" |netcat $SERVER $PORT
+	#echo "sending $distant_archive"
+	#netcat $SERVER $PORT < "$TEMPARCHIVE"
 }
 
 browse () {
