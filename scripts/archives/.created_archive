@@ -1,19 +1,21 @@
-3:13
+3:14
 
-directory test\
-.ohitsasnake  -rwxrwxrwx 20 13 2
-subtest  drwxrwxrwx 0
-toto2  -rwxrwxrwx 0 15 0
-totoro  -rwxrwxrwx 17 15 1
+directory archive-test\
+dossier  drwxr-xr-x 4096
+tata  -rwxrwxrwx 42 14 5
+toto  -rwxrwxrwx 39 19 2
 @
-directory test\subtest\
-tata.txt  -rwxrwxrwx 12 16 2
-toto.txt  -rwxrwxrwx 12 18 2
+directory archive-test\dossier\
+sous-dossier  drwxr-xr-x 4096
+titi  -rwxrwxrwx 6 21 1
 @
-ssss im a 
-ssssnake
-ton voisin totoro
-1 2 3
-soleil
-3 2 1
-saloil
+directory archive-test\dossier\sous-dossier\
+@
+salut moi c'est tata
+et 
+je
+suis
+méchante
+salut, moi c'est toto
+et je suis gentil
+tititi

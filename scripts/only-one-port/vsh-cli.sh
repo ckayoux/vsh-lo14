@@ -41,13 +41,6 @@ echo_transmission () {
 	done
 }
 
-connection_is_active () {
-	if test -n "$(ps $NCPID |tail +2)" #test if NCPID is running
-	then return 0
-	else return -1
-	fi
-}
-
 connect () {
 	export SERVER=$1
 	export PORT=$2
@@ -59,13 +52,15 @@ connect () {
 	trap clean EXIT
 	netcat "$SERVER" "$PORT" < "$OUTGOING"  > "$INCOMING"  &
 	export NCPID=$!
-	connection_is_active
-	if test $? -ne 0
-	then "$LOGGER" error "Connection with $SERVER : $PORT couldn't be established."; exit -1
-	fi
 	exec 3> "$OUTGOING"
 }
 
+connection_is_active () {
+	if test -n "$(ps $NCPID |tail +2)" #test if NCPID is running
+	then return 0
+	else return -1
+	fi
+}
 
 disconnect () {
 	connection_is_active

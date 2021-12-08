@@ -3,7 +3,7 @@ SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/
 ARCHIVESDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/archives/" &> /dev/null && pwd )"
 TEMPARCHIVE="${ARCHIVESDIR}/.created_archive"
 ARCHIVESEXT="sos"
-USAGE="USAGE : $( basename $0 ) <port-number...>"
+USAGE="USAGE : $( basename $0 ) <port-number>"
 
 LIBDIR="${SCRIPTDIR}lib/"
 LOGGER="${LIBDIR}logger.sh"
@@ -26,52 +26,46 @@ then
 	fi
 fi
 
-start () {
-	i=0
-	while read port
-	do
-		local -i P="$port"
-		if test "$P" -le 0 2>/dev/null
+start () (
+	if test $# -eq 1	
+	then
+		local -i PORT="$1"
+		if test "$PORT" -le 0 2>/dev/null
 		then
-			"$LOGGER" error "The port number must be a positive integer (got $P)."
-		elif test "$P" -lt 1024
-		then	"$LOGGER" error "$P : Reserved socket. Choose a minimum port number of 1024."
+			"$LOGGER" error "The port number must be a positive integer."
+		elif test "$PORT" -lt 1024
+		then	"$LOGGER" error "Forbidden socket. Choose a minimum port number of 1024."
 		else
-			((i++))
-			export PORT$i=$P
-			export FIFO$i="/tmp/vsh-server-FIFO-$P"
-			[ -e "$(eval echo "\${FIFO$i}")" ] || mkfifo "$(eval echo "\${FIFO$i}")"
+			export PORT
+			export FIFO="/tmp/vsh-server-FIFO-$$"
+			[ -e $FIFO ] || mkfifo "$FIFO"
+			clean() { rm -f "$FIFO";}
+			trap clean EXIT
+			listen
 		fi
-	done < <(sed 's/ /\n/g' <<< "$*")
-	export PORTSNUMBER=$i
-	for ((k=1;k<=$PORTSNUMBER;k++))
-	do
-		echo "listening on ...""$(eval echo "\${PORT$k}")"
-		listen $k &
-		export LISTENPID$k="$!"
-	done
-}
+	else
+		echo $USAGE
+	fi
+)
 
 
 serve() {
     local cmd archive
-	read cmd archive || exit -1 #<"$FIFO" || exit -1
+	read cmd archive < "$FIFO" || exit -1
 	if [ `type -t $cmd` == 'function' ]
 	then
+		
 		$cmd $archive
-	else 
+	else
 		"$LOGGER" 'unknown-command-error'
 	fi
 }
 
 listen () {
-	z=0
-	while true;
+	while true
 	do
-		local lport="$(eval echo "\${PORT$1}")"
-		local lfifo="$(eval echo "\${FIFO$1}")"
-		serve < "$lfifo" | netcat -l -p $lport > "$lfifo"
-
+		echo "listening"
+		serve < "$FIFO" | netcat -l -p "$PORT" > "$FIFO" #&
 	done
 }
 
@@ -88,7 +82,6 @@ list () {
 create () {
 	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
 	local_archive_name=`basename "$1"`
-	echo "creating $1"
 	read linescount #client sends the archive size in lines
 	"$DOWNLOAD" "$local_archive_path" $linescount
 	if [[ $? -eq 0 ]]
@@ -108,29 +101,17 @@ extract () {
 	echo "T0D0 : extract archive $1."
 }
 
-clean() { 
-		for ((k=1;k<=$PORTSNUMBER;k++))
-		do
-			rm -f "$(echo "\${FIFO$k}")"
-			kill -9 "$(eval echo \$LISTENPID$k)" > /dev/null
-			fuser -k "$(eval echo "\${PORT$k}")"/tcp #HOW TO HIDE THE OUTPUT OF THIS LINE
-		done
-}
-
-if test $# -eq 0	
+if test $# -eq 1	
 then
-	echo $USAGE
+	declare -i PORT="$1"
+	if test "$PORT" -gt 0 2>/dev/null
+	then
+		export PORT
+		start $PORT
+			
+	else
+		"$LOGGER" error "The port number must be a positive integer."
+	fi
 else
-	PORTSNUMBER=$#
-	trap clean EXIT
-	start "$*"
-	echo -e "\nType in 'stop' to shut the server down."
-	while read stop
-	do
-		if [ "$stop" == "stop" ]
-		then
-			echo "Shutting down the server..."
-			exit
-		fi
-	done
+	echo $USAGE
 fi
