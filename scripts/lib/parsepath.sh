@@ -1,12 +1,19 @@
 #!/bin/bash
-USAGE="USAGE : `basename $0` {toFS|toArchive <root-dir>} <path>"
+USAGE="USAGE : `basename $0` {toFS|toArchive} <root-dir> <path>"
 
 toArchive () {
-    echo "${*:2:`expr $# - 1`}"'\' |sed "s/\./$1/" |tr '/' '\\' 2> /dev/null
+    
+    archiveRoot=`echo "$*" |cut -d"|" -f1 |sed "s/'//g"`
+    relpath=`echo "$*" |cut -d"|" -f2 |sed "s/'//g"`
+    archiveRoot="$(echo "$archiveRoot" |sed 's/\/$//' |awk '{gsub("/","\\/");print}')"
+    echo "$relpath"'\' |sed "s/\./$archiveRoot/" |tr '/' '\\' 2> /dev/null
 }
 
 toFS () {
-    echo "$*" |sed -e 's/[^\\]\+\\/\.\\/' |tr '\\' '/' 2> /dev/null
+    echo "$*" |sed -e 's/[^\\]\+\\\(\([^\\]\+\\\)*\)/\.\\\1/' |tr '\\' '/' 2> /dev/null
+}
+toAbsFS () {
+    echo "$*" |tr '\\' '/' 2> /dev/null
 }
 
 case $1 in
@@ -19,13 +26,22 @@ case $1 in
         toFS $*
     fi ;;
 
+    'toAbsFS' ) 
+    if test $# -ne 2
+    then
+        echo $USAGE
+    else
+        shift
+        toAbsFS $*
+    fi ;;
+
     'toArchive' ) 
     if test $# -ne 3
     then
         echo $USAGE
     else
         shift
-        toArchive $*
+        toArchive `echo "$1|$2"`
     fi ;;
 
     *) echo $USAGE

@@ -1,7 +1,7 @@
 #!/bin/bash
 LIB_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PATHPARSER="${LIB_DIR}/parsepath.sh"
-ARCHIVES_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/" &> /dev/null && pwd )" #../archives/
+ARCHIVES_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/../archives" &> /dev/null && pwd )"
 USAGE="Usage : `basename $0` [archive-path]"
 
 if test $# -gt 1
@@ -20,12 +20,12 @@ HEADERLEN=`expr "$(find . |wc -l)" + 2 \* "$(find -type d |wc -l)" - 2`
 HEADERSTART=3
 BODYSTART=`expr "$HEADERLEN" + "$HEADERSTART" + 1`
 exec > "$HEADER" #les echo écriront dans le fichier $ARCHIVE
-R="$(pwd)" #racine de l'archive
+R=`basename "$(pwd)"` #racine de l'archive
 dirsList=`find . -type d` &> /dev/null #récupération des répertoires
 i=0
 for d in $dirsList
 do
-    directory="$("$PATHPARSER" toArchive "'$R'" "'$d'")" &> /dev/null
+    directory="$("$PATHPARSER" toArchive "$R" "$d")" &> /dev/null
     echo "directory $directory" #début du dossier
     while IFS= read -r f
     do  
@@ -65,7 +65,7 @@ do
     then
         fname=`echo "$line"|awk '{ s = "" ; for (i = 1; i <= NF - 2; i++) s = s $i " "; print s}'`
         exec >> "$ARCHIVE"
-        fcontent=`cat "$("$PATHPARSER" toAbsFS "$d""$fname")"`
+        fcontent=`cat "$("$PATHPARSER" toFS "$d""$fname")"`
         if test -z "$fcontent"
         then
             fcontentlen=0
@@ -74,7 +74,6 @@ do
             echo "$fcontent" #adding file content to the archive
         fi
         sed -i "${fpos}"'s/\(^.*\)$/\1 '"$fcontentstart $fcontentlen"'/' "$ARCHIVE" #adding file content start and length indexes in the header line
-       
         (( fcontentstart+=fcontentlen ))
     elif [ -n "$(echo $line |egrep "directory (.*)$")" ]
     then
