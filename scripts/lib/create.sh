@@ -1,6 +1,6 @@
 #!/bin/bash
 LIB_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-PATHPARSER="${LIB_DIR}/parsepath.sh"
+PATHPARSER="${LIB_DIR}/fsutils/parsepath.sh"
 ARCHIVES_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/" &> /dev/null && pwd )" #../archives/
 USAGE="Usage : `basename $0` [archive-path]"
 
