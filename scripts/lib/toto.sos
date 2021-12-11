@@ -1,55 +1,53 @@
 3:33
 
 directory \home\f\Bureau\testcreate\
-0.sos  -rw-r--r-- 6 33 1
-10.sos  -rw-r--r-- 7 34 1
-11.sos  -rw-r--r-- 7 35 1
-12.sos  -rw-r--r-- 7 36 1
-13.sos  -rw-r--r-- 7 37 1
-14.sos  -rw-r--r-- 7 38 1
-15.sos  -rw-r--r-- 7 39 1
-16.sos  -rw-r--r-- 7 40 1
-17.sos  -rw-r--r-- 7 41 1
-18.sos  -rw-r--r-- 7 42 1
-19.sos  -rw-r--r-- 7 43 1
-1.sos  -rw-r--r-- 6 44 1
-2.sos  -rw-r--r-- 6 45 1
-3.sos  -rw-r--r-- 6 46 1
-4.sos  -rw-r--r-- 6 47 1
-5.sos  -rw-r--r-- 6 48 1
-6.sos  -rw-r--r-- 6 49 1
-7.sos  -rw-r--r-- 6 50 1
-8.sos  -rw-r--r-- 6 51 1
-9.sos  -rw-r--r-- 6 52 1
+0 (copie 1) (copie 1) (copie 1).sos  -rw-r--r-- 6 33 1
+0 (copie 1) (copie 1).sos  -rw-r--r-- 6 34 1
+0 (copie 1) (copie 2).sos  -rw-r--r-- 6 35 1
+0 (copie 1).sos  -rw-r--r-- 6 36 1
+0 (copie 2) (copie 1).sos  -rw-r--r-- 6 37 1
+0 (copie 2).sos  -rw-r--r-- 6 38 1
+0 (copie 3).sos  -rw-r--r-- 6 39 1
+0.sos  -rw-r--r-- 6 40 1
+1 (copie 1) (copie 1) (copie 1).sos  -rw-r--r-- 6 41 1
+1 (copie 1) (copie 1).sos  -rw-r--r-- 6 42 1
+1 (copie 1) (copie 2).sos  -rw-r--r-- 6 43 1
+1 (copie 1).sos  -rw-r--r-- 6 44 1
+1 (copie 2).sos  -rw-r--r-- 6 45 1
+1 (copie 3).sos  -rw-r--r-- 6 46 1
+1.sos  -rw-r--r-- 6 47 1
+2 (copie 1) (copie 1).sos  -rw-r--r-- 6 48 1
+2 (copie 1).sos  -rw-r--r-- 6 49 1
+2 (copie 2).sos  -rw-r--r-- 6 50 1
+2.sos  -rw-r--r-- 6 51 1
 dossier  drwxr-xr-x 4096
+.hidden_f  -rw-r--r-- 0 52 0
 @
 directory \home\f\Bureau\testcreate\dossier\
 sous-dossier  drwxr-xr-x 4096
-tata  -rw-r--r-- 20 53 1
+tata  -rw-r--r-- 20 52 1
 @
 directory \home\f\Bureau\testcreate\dossier\sous-dossier\
-toto  -rw-r--r-- 21 54 1
-.totomobile  -rw-r--r-- 21 54 1
+toto  -rw-r--r-- 21 53 1
 @
 tata0
-tata10
-tata11
-tata12
-tata13
-tata14
-tata15
-tata16
-tata17
-tata18
-tata19
+tata0
+tata0
+tata0
+tata0
+tata0
+tata0
+tata0
+tata1
+tata1
+tata1
+tata1
+tata1
+tata1
 tata1
 tata2
-tata3
-tata4
-tata5
-tata6
-tata7
-tata8
-tata9
+tata2
+tata2
+tata2
 Un deuxième fichier
 Un troisième fichier

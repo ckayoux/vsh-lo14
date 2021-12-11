@@ -30,6 +30,7 @@ ARCHIVENAME=`basename "$ARCHIVE"`
 SUBCOMMANDSDIR="$LIB_DIR/browse-commands"
 myPWD="$SUBCOMMANDSDIR/pwd.sh"
 myCD="$SUBCOMMANDSDIR/cd.sh"
+myCAT="$SUBCOMMANDSDIR/cat.sh"
 myLS="$SUBCOMMANDSDIR/ls.sh"
 
 SHELLSYMBOL='฿' #阝 #$ #𰻝
@@ -72,6 +73,10 @@ my-cd () {
 
 my-ls () {
     "$myLS" "$ARCHIVE" "$*"
+}
+
+my-cat () { 
+    "$myCAT" "$ARCHIVE" `echo "$*"`
 }
 
 echo "Browsing '$ARCHIVENAME'"
