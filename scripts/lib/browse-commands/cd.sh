@@ -1,24 +1,40 @@
 #!/bin/bash
-LIB_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+LIB_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/../" &> /dev/null && pwd )"
 
-GETDIRS="${LIB_DIR}/../fsutils/getdirs.sh"
-FEXISTS="${LIB_DIR}/../fsutils/fexists.sh"
-ISDIR="${LIB_DIR}/../fsutils/isdir.sh"
+GETDIRS="${LIB_DIR}/fsutils/getdirs.sh"
+FEXISTS="${LIB_DIR}/fsutils/fexists.sh"
+ISDIR="${LIB_DIR}/fsutils/isdir.sh"
 
-LOGGER="${LIB_DIR}/../logger.sh"
+LOGGER="${LIB_DIR}/logger.sh"
 
-USAGE="USAGE : `basename "$0"` <archive> [path]"
-
-if test $# -gt 2 -o $# -lt 1
+ARCHIVE="$1"
+if test -e "$ARCHIVE"
 then
-    echo "$USAGE"
+    if test -f "$ARCHIVE"
+    then
+        if test -r "$ARCHIVE"
+        then
+            echo -n
+        else
+            "$LOGGER" error "Cannot read from archive file '$ARCHIVE'"
+            exit -1
+        fi
+    else
+        "$LOGGER" error "'$ARCHIVE' is not a file"
+        exit -1
+    fi
+else
+    "$LOGGER" error "Archive '$ARCHIVE' doesn't exist"
     exit -1
 fi
 
-ARCHIVE="$1"
-path="$2"
+shift
+USAGE="USAGE : `basename "$0"` [path]" 
 
-if test "$WD"!=''
+
+path="$1"
+
+if test -n "$WD"
 then
     if [[ -z "$path" || "$path" = '\' ]] #no args or arg is '\' -> go to root dir
     then
@@ -31,10 +47,18 @@ then
         else
             echo "$WD" |sed 's/^\(.*\\\)[^\\]\+[\\]\?$/\1/'
         fi
+    elif [ "$path" = '.' ]
+    then
+        echo "$WD"
     else #path is relative or absolute
         if [ "${path:0:1}" != '\' ] #path is relative
         then
             path="$WD$path" #converting to absolute path
+        else
+            if [ "$(echo "${path:0:`expr "${#ROOTDIR}"`}" |sed 's/\\$//')" != "$(echo $ROOTDIR |sed 's/\\$//')" ]
+            then
+                path="$ROOTDIR${path:1}"
+            fi
         fi
 
         "$FEXISTS" "$path" "$ARCHIVE"
@@ -58,4 +82,6 @@ then
         fi
 
     fi
+else
+    exit -1
 fi

@@ -11,8 +11,9 @@ then
     echo "$USAGE"
     exit -1
 fi
-regexpFriendlyDirs="$(cat < <("$GETDIRS" "$2") |awk '{gsub(/\\/,"/");print}')"
-regexpFriendlyFiles="$(cat < <("$GETFILES" "$2") |awk '{gsub(/\\/,"/");print}')"
+path="$2"
+regexpFriendlyDirs="$(cat < <("$GETDIRS" "$path") |awk '{gsub(/\\/,"/");print}')"
+regexpFriendlyFiles="$(cat < <("$GETFILES" "$path") |awk '{gsub(/\\/,"/");print}')"
 regexpFriendlyPath="$(echo "$1" |awk '{gsub(/\\/,"/");print}')"
 matches="$(echo "$regexpFriendlyDirs" |grep "$regexpFriendlyPath/\?\$")$(echo "$regexpFriendlyFiles" |grep "$regexpFriendlyPath/\?\$")"
 if test -n "$matches"

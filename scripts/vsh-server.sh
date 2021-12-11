@@ -111,9 +111,9 @@ extract () {
 clean() { 
 		for ((k=1;k<=$PORTSNUMBER;k++))
 		do
-			rm -f "$(echo "\${FIFO$k}")"
-			kill -9 "$(eval echo \$LISTENPID$k)" > /dev/null
-			fuser -k "$(eval echo "\${PORT$k}")"/tcp #HOW TO HIDE THE OUTPUT OF THIS LINE
+			#kill -9 "$(eval echo \$LISTENPID$k)" > /dev/null
+			fuser -k "$(eval echo "\${PORT$k}")"/tcp > /dev/null 2>&1
+			rm -f "$(eval echo "\${FIFO$k}")"
 		done
 }
 
@@ -130,6 +130,7 @@ else
 		if [ "$stop" == "stop" ]
 		then
 			echo "Shutting down the server..."
+			pkill -P $$
 			exit
 		fi
 	done

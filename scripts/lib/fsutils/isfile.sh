@@ -12,11 +12,12 @@ fi
 
 regexpFriendlyFiles="$(cat < <("$GETFILES" "$2") |awk '{gsub(/\\/,"/");print}')"
 regexpFriendlyPath="$(echo "$1" |awk '{gsub(/\\/,"/");print}')"
+
 matches="$(echo "$regexpFriendlyFiles" |grep "$regexpFriendlyPath/\?\$")"
 
-if test -n "$matches"
+if test -z "$matches"
 then
-    exit 0
-else
     exit -1
+else
+    exit 0
 fi

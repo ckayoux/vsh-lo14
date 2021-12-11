@@ -1,5 +1,5 @@
 #!/bin/bash
-USAGE="USAGE : `basename "$0"` <abs-path> <archive-path>"
+USAGE="USAGE : `basename "$0"` <archive-path>"
 
 if test $# -ne 1
 then
