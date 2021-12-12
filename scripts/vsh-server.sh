@@ -9,9 +9,11 @@ LIBDIR="${SCRIPTDIR}lib/"
 LOGGER="${LIBDIR}logger.sh"
 DOWNLOAD="${LIBDIR}download.sh"
 CREATE="${LIBDIR}create.sh"
+BROWSE="${LIBDIR}browse.sh"
 #ERRLOGS="vsh_server_errlogs.txt"
 
 EOT_SIGNAL="𰻞𰻞麵"
+PROMPT_SIGNAL="( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)"
 
 NETCAT="netcat"
 which $NETCAT >/dev/null
@@ -101,7 +103,10 @@ create () {
 }
 
 browse () {
-	echo "T0D0 : browse archive $1."
+	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
+	local_archive_name=`basename "$1"`
+	"$BROWSE" "$local_archive_path"
+	echo "$EOT_SIGNAL"
 }
 
 extract () {

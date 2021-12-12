@@ -88,7 +88,8 @@ do
             else
                 firstline=`sed -n 1p "$ARCHIVE"`
                 HEADERSTART=`echo "$firstline" |cut -d":" -f1`
-                HEADERLEN=$((`echo "$firstline" |cut -d":" -f2` -$HEADERSTART))
+                HEADEREND=`echo "$firstline" |cut -d":" -f2`
+                HEADERLEN=$(($HEADEREND - $HEADERSTART))
                 ARCHIVELEN="$(wc -l < "$ARCHIVE")"
                 i=-1
                 while read -r headerline
@@ -107,10 +108,16 @@ do
                             sed -i "`expr $i + $HEADERSTART - 1`"'s/\(.*\)/\1\n'"$filename $DEFAULTRIGHTS 0 $ARCHIVELEN 0"'/' "$ARCHIVE"
                             sed -i '1s/\(.*\)/'"$HEADERSTART:`expr $HEADERLEN + 1 + $HEADERSTART`"'/' "$ARCHIVE"
                             echo "'$filename' has been created successfully in '$containedin'."
+                            ((HEADEREND++))
+                            ((HEADERLEN++))
                             break
                         fi
                     fi
                 done < <(tail +$HEADERSTART "$ARCHIVE" |head -$HEADERLEN)
+                awkcommand='( NR>='$HEADERSTART' && NR<='$HEADEREND' && ($0 ~ /^.* +[^d][rwx\-]{9} [0-9]+ [0-9]+ [0-9]+/) ) {for (i=1;i<=NF-2; i++) {if(i!=NF-4) printf "%s ",$i; else printf "%s  ",$i};newstart=$(NF-1)+1;printf ("%d %s\n",newstart,$NF);}
+                            ( NR>='$HEADERSTART' && NR<='$HEADEREND' && ($0 !~ /^.* +[^d][rwx\-]{9} [0-9]+ [0-9]+ [0-9]+/) ) {print}
+                            ( ! (NR>='$HEADERSTART' && NR<='$HEADEREND') ) {print}'
+                echo "$(awk -F' ' "$awkcommand" "$ARCHIVE")" > "$ARCHIVE" #adding 1 to each file's line start
             fi
         fi
     fi

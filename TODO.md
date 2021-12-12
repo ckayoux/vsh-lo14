@@ -4,8 +4,6 @@
 + [ ] Put list mode's code into its own script lib/list.sh
 + [ ] Test with hidden files, elts that are neither files nor directories, dirs and files with spaces in their name
 
-+ [ ] Browse mode server & client implementation
-
 + [ ] Improve path parsing by adding support of \dossier\\.\test\\.\\.\toast && \test\toast\\..
 
 + [ ] Extract mode script
@@ -13,10 +11,11 @@
 
 
 ## IN PROGRESS
-+ [ ] Browse mode's script
 
 
 ## DONE
++ [ ] Improve connection check and disconnection messages
++ [X] Browse mode server & client implementation
 + [X] making the server able to echo messages to the client
 + [X] making the server able to listen on plural ports
 + [X] create mode script

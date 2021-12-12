@@ -85,6 +85,8 @@ do
             firstline=`sed -n 1p "$ARCHIVE"`
             HEADERSTART=`echo "$firstline" |cut -d":" -f1`
             BODYSTART=`echo "$firstline" |cut -d":" -f2`
+            HEADEREND=$BODYSTART
+            HEADERLEN=$(($HEADEREND - $HEADERSTART))
             if test $filelen -gt 0
             then 
                 #delete file content
@@ -99,16 +101,20 @@ do
                     elt="$(echo "$archiveline" |grep ".* [^d][rwx\-]\{9\} [0-9]\+ [0-9]\+ [0-9]\+")"
                     if test -n "$elt"
                     then
-                        linestart="$(echo "$elt" |awk '{print $(NF-1)}')"
-                        if test $filelen -gt 0 -a $linestart -gt $filestart #those files' body is after the deleted file's body
-                        then
-                            sed -i $i's/[0-9]\+ \([0-9]\+\)$/'`expr $linestart - $filelen - 1`' \1/' "$ARCHIVE"
-                        elif [ "$elt" = "$fileinfo" ]
+                        if [ "$elt" = "$fileinfo" ]
                         then
                             linetodel=$i
-                        else
-                            sed -i $i's/[0-9]\+ \([0-9]\+\)$/'`expr $linestart - 1`' \1/' "$ARCHIVE"
                         fi
+                        #linestart="$(echo "$elt" |awk '{print $(NF-1)}')"
+                        #if test $filelen -gt 0 -a $linestart -gt $filestart #those files' body is after the deleted file's body
+                        #then
+                         #   sed -i $i's/[0-9]\+ \([0-9]\+\)$/'`expr $linestart - $filelen - 1`' \1/' "$ARCHIVE"
+                        #elif [ "$elt" = "$fileinfo" ]
+                        #then
+                        #    linetodel=$i
+                        #else
+                        #    sed -i $i's/[0-9]\+ \([0-9]\+\)$/'`expr $linestart - 1`' \1/' "$ARCHIVE"
+                        #fi
                     fi
                 fi
 
@@ -119,6 +125,12 @@ do
             done < "$ARCHIVE"
             sed -i $linetodel'd' "$ARCHIVE"
             sed -i 1's/[0-9]\+:[0-9]\+/'"$HEADERSTART:`expr $BODYSTART - 1`"'/' "$ARCHIVE"
+            ((HEADERLEN--))
+            ((HEADEREND--))
+            awkcommand='( NR>='$HEADERSTART' && NR<='$HEADEREND' && ($0 ~ /^.* +[^d][rwx\-]{9} [0-9]+ [0-9]+ [0-9]+/) ) {for (i=1;i<=NF-2; i++) {if(i!=NF-4) printf "%s ",$i; else printf "%s  ",$i};($(NF-1)>'$filestart')?newstart=$(NF-1)-1-'$filelen':newstart=$(NF-1)-1;printf ("%d %s\n",newstart,$NF);}
+                        ( NR>='$HEADERSTART' && NR<='$HEADEREND' && ($0 !~ /^.* +[^d][rwx\-]{9} [0-9]+ [0-9]+ [0-9]+/) ) {print}
+                        ( ! (NR>='$HEADERSTART' && NR<='$HEADEREND') ) {print}'
+            echo "$(awk -F' ' "$awkcommand" "$ARCHIVE")" > "$ARCHIVE" #updating files start in header
             echo "'$path' has been removed successfully."
             
 
@@ -148,19 +160,21 @@ do
                 firstline=`sed -n 1p "$ARCHIVE"`
                 HEADERSTART=`echo "$firstline" |cut -d":" -f1`
                 BODYSTART=`echo "$firstline" |cut -d":" -f2`
+                HEADEREND=$BODYSTART
+                HEADERLEN=$(($HEADEREND - $HEADERSTART))
                 i=1
                 friendlyPath="$(echo "$path" |sed 's/\\/\\\\/g')"
                 friendlyContainedIn="$(echo "$containedin" |sed 's/\\/\\\\/g')"
                 inparentdir=0
                 while read -r archiveline
                 do 
-                    filee="$(echo "$archiveline" |grep ".* [^d][rwx\-]\{9\} [0-9]\+ [0-9]\+ [0-9]\+")"
+                    #filee="$(echo "$archiveline" |grep ".* [^d][rwx\-]\{9\} [0-9]\+ [0-9]\+ [0-9]\+")"
                     #echo "$i$filee"
-                    if test -n "$filee"
-                    then
-                        linestart="$(echo "$filee" |awk '{print $(NF-1)}')"
-                        sed -i $i's/[0-9]\+ \([0-9]\+\)$/'`expr $linestart - 3`' \1/' "$ARCHIVE"
-                    fi
+                    #if test -n "$filee"
+                    #then
+                    #    linestart="$(echo "$filee" |awk '{print $(NF-1)}')"
+                    #    sed -i $i's/[0-9]\+ \([0-9]\+\)$/'`expr $linestart - 3`' \1/' "$ARCHIVE"
+                    #fi
 
                     if test $i -ge "$HEADERSTART"
                     then
@@ -203,6 +217,12 @@ do
                     sed -i $parentdirinstanceline'd;'$position','$((position+1))'d' "$ARCHIVE" #deleting instance in parent dir, dir entry and @
                 fi
                 sed -i 1's/[0-9]\+:[0-9]\+/'"$HEADERSTART:`expr $BODYSTART - 3`"'/' "$ARCHIVE"
+                ((HEADERLEN-=3))
+                ((HEADEREND-=3))
+                awkcommand='( NR>='$HEADERSTART' && NR<='$HEADEREND' && ($0 ~ /^.* +[^d][rwx\-]{9} [0-9]+ [0-9]+ [0-9]+/) ) {for (i=1;i<=NF-2; i++) {if(i!=NF-4) printf "%s ",$i; else printf "%s  ",$i};newstart=$(NF-1)-3;printf ("%d %s\n",newstart,$NF);}
+                            ( NR>='$HEADERSTART' && NR<='$HEADEREND' && ($0 !~ /^.* +[^d][rwx\-]{9} [0-9]+ [0-9]+ [0-9]+/) ) {print}
+                            ( ! (NR>='$HEADERSTART' && NR<='$HEADEREND') ) {print}'
+                    echo "$(awk -F' ' "$awkcommand" "$ARCHIVE")" > "$ARCHIVE" #adding 3 to each file's line start
             else
                 firstline=`sed -n 1p "$ARCHIVE"`
                 HEADERSTART=`echo "$firstline" |cut -d":" -f1`

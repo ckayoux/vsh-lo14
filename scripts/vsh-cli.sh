@@ -15,6 +15,11 @@ DEFAULT_SERVER_NAME='localhost'
 DEFAULT_ARCHIVE_PREFIX='archive'
 
 EOT_SIGNAL="𰻞𰻞麵"
+PROMPT_SIGNAL="( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)"
+PROMPT_SYMBOL='฿' #阝 #$ #𰻝
+
+export CLI_PID=$$
+export established=0
 
 NETCAT="netcat"
 which $NETCAT >/dev/null
@@ -29,18 +34,6 @@ then
 	fi
 fi
 
-echo_transmission () {
-	while read line
-	do
-		if [ "$line" == "$EOT_SIGNAL" ]
-		then
-			break
-		else
-			printf "%s\n" "$line"
-		fi
-	done
-}
-
 connection_is_active () {
 	if test -n "$(ps $NCPID |tail +2)" #test if NCPID is running
 	then return 0
@@ -48,43 +41,68 @@ connection_is_active () {
 	fi
 }
 
-connect () {
-	export SERVER=$1
-	export PORT=$2
-	export OUTGOING="/tmp/vsh-cli-OUTGOING-$$"
-	export INCOMING="/tmp/vsh-cli-INCOMING-$$"
-	clean() { rm -f "$OUTGOING";rm -f "$INCOMING";}
-	[ -e $OUTGOING ] || mknod "$OUTGOING" p
-	[ -e $INCOMING ] || mknod "$INCOMING" p
-	trap clean EXIT
-	netcat "$SERVER" "$PORT" < "$OUTGOING"  > "$INCOMING"  &
-	export NCPID=$!
-	connection_is_active
-	if test $? -ne 0
-	then "$LOGGER" error "Connection with $SERVER : $PORT couldn't be established."; exit -1
-	fi
-	exec 3> "$OUTGOING"
-}
 
 
 disconnect () {
 	connection_is_active
 	if test $? -eq 0
-	then kill $NCPID
-	else "$LOGGER" error "Connection with $SERVER : $PORT couldn't be established."
+	then kill $NCPID; exec >&3-
+	else 
+		if test $established -eq 0
+		then
+			"$LOGGER" error "Connection with $SERVER : $PORT couldn't be established."
+		else
+			"$LOGGER" error "Connection with $SERVER : $PORT was lost."
+		fi
+		if test -n "$(ps $CLI_PID |tail +2)"
+		then kill -s TERM $CLI_PID
+		fi
 	fi
-	exec >&3-
+}
+
+
+connect () {
+	export SERVER=$1
+	export PORT=$2
+	export OUTGOING="/tmp/vsh-cli-OUTGOING-$$"
+	export INCOMING="/tmp/vsh-cli-INCOMING-$$"
+	clean() { rm -f "$OUTGOING";rm -f "$INCOMING"; pkill -P $CLI_PID; }
+	[ -e $OUTGOING ] || mknod "$OUTGOING" p
+	[ -e $INCOMING ] || mknod "$INCOMING" p
+	trap clean EXIT
+	trap "exit -1" TERM
+	netcat "$SERVER" "$PORT" < "$OUTGOING"  > "$INCOMING"  &
+	export NCPID=$!
+
+	while true
+	do
+		connection_is_active
+		if test $? -ne 0
+		then
+			disconnect
+			break
+		else
+			if test $established -eq 0
+			then
+				established=1
+			fi
+		fi
+		sleep 1.25
+	done &
+
+	exec 3> "$OUTGOING"
 }
 
 
 list () {
 	echo "list" >&3
 	echo-transmission <"$INCOMING"
+	sleep 0.05
 	disconnect
 }
 
 echo-transmission () {
-	while read line
+	while read -r line
 	do
 		if [ "$line" == "$EOT_SIGNAL" ]
 		then
@@ -109,7 +127,29 @@ create () {
 }
 
 browse () {
-	echo "T0D0 : Enter browse mode for $1 on $SERVER"
+	distant_archive=$1
+	echo "browse $distant_archive" >&3
+	while read -r line #output loop
+	do
+		if [ "$line" == "$EOT_SIGNAL" ]
+		then
+			break
+		elif [ "$line" == "$PROMPT_SIGNAL" ]
+		then
+			echo -ne "$PROMPT_SYMBOL "
+		else
+			echo "$line"
+		fi
+	done < "$INCOMING" &
+	while read -r cmdargs #input loop
+	do
+		if [[ "$cmdargs" = 'stop' || "$cmdargs" = 'dc' || "$cmdargs" = 'exit' || "$cmdargs" = 'disconnect' ]]
+		then
+			break
+		fi
+		echo "$cmdargs" >&3
+	done
+	disconnect
 }
 
 extract () {

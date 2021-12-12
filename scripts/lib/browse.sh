@@ -34,8 +34,9 @@ myCAT="$SUBCOMMANDSDIR/cat.sh"
 myLS="$SUBCOMMANDSDIR/ls.sh"
 myTOUCH="$SUBCOMMANDSDIR/touch.sh"
 myMKDIR="$SUBCOMMANDSDIR/mkdir.sh"
+myRM="$SUBCOMMANDSDIR/rm.sh"
 
-SHELLSYMBOL='฿' #阝 #$ #𰻝
+PROMPT_SIGNAL="( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)"
 
 export ROOTDIR=`"$GETROOTDIR" "$ARCHIVE"`
 export WD="$ROOTDIR"
@@ -89,11 +90,15 @@ my-mkdir () {
     "$myMKDIR" "$ARCHIVE" `echo "$*"`
 }
 
+my-rm () { 
+    "$myRM" "$ARCHIVE" `echo "$*"`
+}
+
 echo "Browsing '$ARCHIVENAME'"
 dhl
 echo
 echo "Type 'stop' to disconnect."
-echo -ne '\n'"$SHELLSYMBOL"' '
+echo "$PROMPT_SIGNAL"
 while read -r cmd args
 do
     if [[ "$cmd" = 'stop' || "$cmd" = 'dc' || "$cmd" = 'exit' || "$cmd" = 'disconnect' ]]
@@ -101,13 +106,14 @@ do
         break
     elif test -z "$cmd"
     then
-        echo -ne '\n'"$SHELLSYMBOL"' '
+        echo "$PROMPT_SIGNAL"
         continue
     elif test "$(type -t "my-${cmd}")"=='function' -a -n "$(type -t "my-${cmd}")"
     then
         my-"$cmd" "$args"
+        echo
     else
         "$LOGGER" error "Invalid command '${cmd}'. Use 'help' to list the available commands in this mode."
     fi
-    echo -ne '\n'"$SHELLSYMBOL"' '
+    echo "$PROMPT_SIGNAL"
 done
