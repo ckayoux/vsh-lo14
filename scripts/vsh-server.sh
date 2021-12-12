@@ -57,13 +57,26 @@ start () {
 
 serve() {
     local cmd archive
-	read cmd archive || exit -1 #<"$FIFO" || exit -1
-	if [ `type -t $cmd` == 'function' ]
-	then
-		$cmd $archive
-	else 
-		"$LOGGER" 'unknown-command-error'
-	fi
+	lastcmd=""
+	#read cmd archive || return -1 #|| exit -1 #<"$FIFO" || exit -1
+	#if [ `type -t $cmd` == 'function' ]
+	#then
+	#	$cmd $archive
+	#else 
+	#	"$LOGGER" 'unknown-command-error'
+	#fi
+	while [[ $iteration -eq 1 || "$lastcmd" = "archive_exists" ]]
+	read cmd archive || exit -1 
+	do
+		if [ `type -t $cmd` == 'function' ]
+		then
+			$cmd $archive
+		else 
+			"$LOGGER" 'unknown-command-error'
+		fi
+		((iteration++))
+		lastcmd="$cmd"
+	done
 }
 
 listen () {
@@ -75,6 +88,23 @@ listen () {
 		serve < "$lfifo" | netcat -l -p $lport > "$lfifo"
 
 	done
+}
+
+archive_exists () {
+	apath="$ARCHIVESDIR/$1.$ARCHIVESEXT"
+	aname=`basename "$apath" ".$ARCHIVESEXT"`
+	if test -e "$apath"
+	then
+		echo "$EOT_SIGNAL"
+	else
+		publicip=`curl -s api.ipify.org`
+		if test -n "$publicip" -a $? -eq 0
+		then
+			"$LOGGER" error "Archive '$aname' doesn't exist on $publicip"
+		else
+			"$LOGGER" error "Archive '$aname' doesn't exist on the server"
+		fi
+	fi
 }
 
 list () {
@@ -104,7 +134,6 @@ create () {
 
 browse () {
 	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
-	local_archive_name=`basename "$1"`
 	"$BROWSE" "$local_archive_path"
 	echo "$EOT_SIGNAL"
 }

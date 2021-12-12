@@ -14,7 +14,8 @@
 
 
 ## DONE
-+ [ ] Improve connection check and disconnection messages
++ [X] Set up an intelligent way of testing if archive exists
++ [X] Improve connection check and disconnection messages
 + [X] Browse mode server & client implementation
 + [X] making the server able to echo messages to the client
 + [X] making the server able to listen on plural ports

@@ -93,6 +93,19 @@ connect () {
 	exec 3> "$OUTGOING"
 }
 
+archive_exists () {
+	aname="$1"
+	echo "archive_exists $1" >&3
+	read -r response
+	if [ "$response" != "$EOT_SIGNAL" ]
+	then
+		if test -n "$response"; then echo "$response"; fi
+		return -1
+	else
+		return 0
+	fi
+}
+
 
 list () {
 	echo "list" >&3
@@ -127,28 +140,33 @@ create () {
 }
 
 browse () {
-	distant_archive=$1
-	echo "browse $distant_archive" >&3
-	while read -r line #output loop
-	do
-		if [ "$line" == "$EOT_SIGNAL" ]
-		then
-			break
-		elif [ "$line" == "$PROMPT_SIGNAL" ]
-		then
-			echo -ne "$PROMPT_SYMBOL "
-		else
-			echo "$line"
-		fi
-	done < "$INCOMING" &
-	while read -r cmdargs #input loop
-	do
-		if [[ "$cmdargs" = 'stop' || "$cmdargs" = 'dc' || "$cmdargs" = 'exit' || "$cmdargs" = 'disconnect' ]]
-		then
-			break
-		fi
-		echo "$cmdargs" >&3
-	done
+	distant_archive="$1"
+	archive_exists "$1" < "$INCOMING"
+	if test $? -eq 0
+	then
+		echo "browse $distant_archive" >&3
+		while read -r line #output loop
+		do
+			if [ "$line" == "$EOT_SIGNAL" ]
+			then
+				break
+			elif [ "$line" == "$PROMPT_SIGNAL" ]
+			then
+				echo -ne "$PROMPT_SYMBOL "
+			else
+				echo "$line"
+			fi
+		done < "$INCOMING" &
+		while read -r cmdargs #input loop
+		do
+			if [[ "$cmdargs" = 'stop' || "$cmdargs" = 'dc' || "$cmdargs" = 'exit' || "$cmdargs" = 'disconnect' ]]
+			then
+				break
+			fi
+			echo "$cmdargs" >&3
+		done
+	fi
+	sleep 0.05
 	disconnect
 }
 
