@@ -48,7 +48,7 @@ start () {
 	export PORTSNUMBER=$i
 	for ((k=1;k<=$PORTSNUMBER;k++))
 	do
-		echo "listening on ...""$(eval echo "\${PORT$k}")"
+		echo "listening on $(eval echo "\${PORT$k}")"'...'
 		listen $k &
 		export LISTENPID$k="$!"
 	done
