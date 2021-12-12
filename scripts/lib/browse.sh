@@ -4,6 +4,7 @@ GETROOTDIR="$LIB_DIR/fsutils/getrootdir.sh"
 
 LOGGER="${LIB_DIR}/logger.sh"
 
+ARCHIVESEXT="sos"
 ARCHIVE="$1"
 if test -e "$ARCHIVE"
 then
@@ -24,7 +25,7 @@ else
     "$LOGGER" error "Archive '$ARCHIVE' doesn't exist"
     exit -1
 fi
-ARCHIVENAME=`basename "$ARCHIVE"`
+ARCHIVENAME=`basename "$ARCHIVE" ".$ARCHIVESEXT"`
 
 
 SUBCOMMANDSDIR="$LIB_DIR/browse-commands"

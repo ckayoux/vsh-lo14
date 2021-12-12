@@ -15,6 +15,8 @@ BROWSE="${LIBDIR}browse.sh"
 EOT_SIGNAL="𰻞𰻞麵"
 PROMPT_SIGNAL="( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)"
 
+MUTEXFILE="/tmp/vsh-server-$$-MUTEX"
+
 NETCAT="netcat"
 which $NETCAT >/dev/null
 if test $? -ne 0
@@ -56,7 +58,7 @@ start () {
 
 
 serve() {
-    local cmd archive
+    #local cmd archive
 	lastcmd=""
 	#read cmd archive || return -1 #|| exit -1 #<"$FIFO" || exit -1
 	#if [ `type -t $cmd` == 'function' ]
@@ -83,8 +85,8 @@ listen () {
 	z=0
 	while true;
 	do
-		local lport="$(eval echo "\${PORT$1}")"
-		local lfifo="$(eval echo "\${FIFO$1}")"
+		lport="$(eval echo "\${PORT$1}")"
+		lfifo="$(eval echo "\${FIFO$1}")"
 		serve < "$lfifo" | netcat -l -p $lport > "$lfifo"
 
 	done
@@ -93,9 +95,16 @@ listen () {
 archive_exists () {
 	apath="$ARCHIVESDIR/$1.$ARCHIVESEXT"
 	aname=`basename "$apath" ".$ARCHIVESEXT"`
+	cat $MUTEXFILE |grep '^'"$aname"'$' >> /home/f/Bureau/testestest
+	mutex="$(cat $MUTEXFILE |grep '^'"$aname"'$')"
 	if test -e "$apath"
 	then
-		echo "$EOT_SIGNAL"
+		if test -n "$mutex"
+		then
+			"$LOGGER" error "'$aname' is already being browsed by another user"
+		else
+			echo "$EOT_SIGNAL"
+		fi
 	else
 		publicip=`curl -s api.ipify.org`
 		if test -n "$publicip" -a $? -eq 0
@@ -112,14 +121,15 @@ list () {
 	echo "-------------------------------------------"
 	while IFS= read archive
 	do
-		printf " + %s\n" "$archive"
-	done <<< `ls "$ARCHIVESDIR" |grep "\([a-z]\+\.$ARCHIVESEXT\)$"`
+		aname=`basename "$archive" ".$ARCHIVESEXT"`
+		printf " + %s\n" "$aname"
+	done <<< `ls "$ARCHIVESDIR/*.sos"` # " |grep "\([a-z]\+\.$ARCHIVESEXT\)$"`
 	echo "$EOT_SIGNAL"
 }
 
 create () {
 	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
-	local_archive_name=`basename "$1"`
+	local_archive_name=`basename "$1" ".$ARCHIVESEXT"`
 	echo "creating $1"
 	read linescount #client sends the archive size in lines
 	"$DOWNLOAD" "$local_archive_path" $linescount
@@ -134,7 +144,10 @@ create () {
 
 browse () {
 	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
+	aname=`basename "$apath" ".$ARCHIVESEXT"`
+	echo "$aname" >> "$MUTEXFILE"
 	"$BROWSE" "$local_archive_path"
+	sed -i '/^'"$aname"'$/d' "$MUTEXFILE"
 	echo "$EOT_SIGNAL"
 }
 
@@ -143,18 +156,20 @@ extract () {
 }
 
 clean() { 
+		rm "$MUTEXFILE"
 		for ((k=1;k<=$PORTSNUMBER;k++))
 		do
 			#kill -9 "$(eval echo \$LISTENPID$k)" > /dev/null
 			fuser -k "$(eval echo "\${PORT$k}")"/tcp > /dev/null 2>&1
 			rm -f "$(eval echo "\${FIFO$k}")"
-		done
+		done	
 }
 
 if test $# -eq 0	
 then
 	echo $USAGE
 else
+	touch "$MUTEXFILE"
 	PORTSNUMBER=$#
 	trap clean EXIT
 	start "$*"
