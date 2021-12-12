@@ -177,6 +177,7 @@ done < <("$GETCONTENT" "$ARCHIVE" "$path" |grep -o '.* [daDPSLP\-][rwx\-]\{9\} [
 linelen=0
 linescount=0
 eltscount=0
+curreltscount=0
 space="   "
 
 if test $l -eq 1 -a $n -eq 0
@@ -185,28 +186,36 @@ then
     echo "Content of '`"$myPWD"`' :"
     echo "----------------------------------------"
 fi
-
+firstlineeltscount=-1
 while read -r contentline
 do
     str="$(show-elt "$contentline")"
-    len=$?
+    len=${#str}
     if test -n "$str"
     then
         if test $l -ne 1
         then
-            if test `expr \( "$linelen" + "$len" + "${#space}" \) / 80` -gt $linescount
+            toprintlen=`expr \( "$linelen" + "$len" + "${#space}" \)`
+            if [[ `expr "$toprintlen" / 80` -gt $linescount || $curreltscount -eq $firstlineeltscount && $linescount -ne 0 ]]
             then
                 echo
                 ((linescount++))
+                curreltscount=0
+            fi
+            
+            if test $linescount -eq 1 -a $firstlineeltscount -eq -1
+                then firstlineeltscount=$eltscount
             fi
             echo -en "$str"
             ((eltscount++))
+            ((curreltscount++))
             ((linelen+=len))
 
             len=`expr "${#space}" + "$maxstrlen" - "${#str}" `
             if test `expr \( "$linelen" + "$len" \) / 80` -gt $linescount
             then
                 echo
+                curreltscount=0
                 ((linescount++))
             else
                 printf %"$len"s%s "$space"
@@ -216,6 +225,7 @@ do
             ((linescount++))
             echo "$str"
             ((eltscount++))
+            ((curreltscount++))
         fi
     fi
 done < <("$GETCONTENT" "$ARCHIVE" "$path" |grep -o '.* [daDPSLP\-][rwx\-]\{9\} [0-9]\+')

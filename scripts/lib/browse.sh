@@ -32,6 +32,8 @@ myPWD="$SUBCOMMANDSDIR/pwd.sh"
 myCD="$SUBCOMMANDSDIR/cd.sh"
 myCAT="$SUBCOMMANDSDIR/cat.sh"
 myLS="$SUBCOMMANDSDIR/ls.sh"
+myTOUCH="$SUBCOMMANDSDIR/touch.sh"
+myMKDIR="$SUBCOMMANDSDIR/mkdir.sh"
 
 SHELLSYMBOL='฿' #阝 #$ #𰻝
 
@@ -77,6 +79,14 @@ my-ls () {
 
 my-cat () { 
     "$myCAT" "$ARCHIVE" `echo "$*"`
+}
+
+my-touch () { 
+    "$myTOUCH" "$ARCHIVE" `echo "$*"`
+}
+
+my-mkdir () { 
+    "$myMKDIR" "$ARCHIVE" `echo "$*"`
 }
 
 echo "Browsing '$ARCHIVENAME'"
