@@ -123,7 +123,7 @@ list () {
 	do
 		aname=`basename "$archive" ".$ARCHIVESEXT"`
 		printf " + %s\n" "$aname"
-	done <<< `ls "$ARCHIVESDIR/*.sos"` # " |grep "\([a-z]\+\.$ARCHIVESEXT\)$"`
+	done <<< `ls "$ARCHIVESDIR" |grep "\([a-z]\+\.$ARCHIVESEXT\)$"`
 	echo "$EOT_SIGNAL"
 }
 
