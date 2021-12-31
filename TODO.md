@@ -6,12 +6,9 @@
 
 + [ ] Improve path parsing by adding support of \dossier\\.\test\\.\\.\toast && \test\toast\\..
 
-+ [ ] Extract mode script
-+ [ ] Extract mode's server & client implementation
-
 
 ## IN PROGRESS
-
++ [ ] Extract mode's server & client implementation
 
 ## DONE
 + [X] Mutex access to browse mode for each archive
@@ -26,6 +23,7 @@
 + [X] Browse mode's ls script with its options
 + [X] Get rid of ugly display when stopping the server
 + [X] Browse mode's cat script
-+ [X] Browse mode's rm script with its options <-
-+ [X] Browse mode's touch script <-
-+ [X] Browse mode's mkdir script with its options <-
++ [X] Browse mode's rm script with its options
++ [X] Browse mode's touch script
++ [X] Browse mode's mkdir script with its options
++ [X] Extract mode script

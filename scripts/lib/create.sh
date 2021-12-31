@@ -19,7 +19,7 @@ HEADER="/tmp/.temp_header"
 HEADERLEN=`expr "$(find . |wc -l)" + 2 \* "$(find -type d |wc -l)" - 2`
 HEADERSTART=3
 BODYSTART=`expr "$HEADERLEN" + "$HEADERSTART" + 1`
-exec > "$HEADER" #les echo écriront dans le fichier $ARCHIVE
+exec > "$HEADER" #les echo écriront dans le fichier $HEADER
 R="$(pwd)" #racine de l'archive
 dirsList=`find . -type d` &> /dev/null #récupération des répertoires
 i=0
@@ -60,7 +60,6 @@ fcontentstart=$BODYSTART
 cd "$(pwd)"
 while IFS= read -r line
 do
-    printf "$line" >> "/home/f/Bureau/createlog"
     if [ -n "$(echo "$line" |egrep -- "\-[rwx\-]{9} [0-9]+\$")" ]
     then
         fname=`echo "$line"|awk '{ s = "" ; for (i = 1; i <= NF - 2; i++) s = s $i " "; print s}'`

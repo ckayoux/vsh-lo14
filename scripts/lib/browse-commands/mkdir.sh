@@ -125,7 +125,7 @@ do
                     HEADEREND=`echo "$firstline" |cut -d":" -f2`
                     HEADERLEN=$(($HEADEREND -$HEADERSTART))
 
-                    ARCHIVELEN="$(wc -l < "$ARCHIVE")"
+                    #ARCHIVELEN="$(wc -l < "$ARCHIVE")"
                     i=-1
                     while read -r headerline
                     do
