@@ -150,7 +150,10 @@ browse () {
 	aname=`basename "$apath" ".$ARCHIVESEXT"`
 	echo "$aname" >> "$MUTEXFILE" #prevent two users from browsing simultaneously
 	"$BROWSE" "$local_archive_path"
-	sed -i '/^'"$aname"'$/d' "$MUTEXFILE"
+	if test -w "$MUTEXFILE"
+	then
+		sed -i '/^'"$aname"'$/d' "$MUTEXFILE"
+	fi
 	echo "$EOT_SIGNAL"
 }
 
@@ -169,7 +172,10 @@ extract () {
 	done < "$local_archive_path"
 	echo "Extracting archive $aname at '$extraction_path' ..." 
 
-	sed -i '/^'"$aname"'$/d' "$MUTEXFILE"
+	if test -w "$MUTEXFILE"
+	then
+		sed -i '/^'"$aname"'$/d' "$MUTEXFILE"
+	fi
 	echo "$EOT_SIGNAL"
 }
 
