@@ -8,7 +8,6 @@
 
 
 ## IN PROGRESS
-+ [ ] Extract mode's server & client implementation
 
 ## DONE
 + [X] Mutex access to browse mode for each archive
@@ -27,3 +26,4 @@
 + [X] Browse mode's touch script
 + [X] Browse mode's mkdir script with its options
 + [X] Extract mode script
++ [X] Extract mode's server & client implementation

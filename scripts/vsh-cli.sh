@@ -7,6 +7,8 @@ TEMPARCHIVE="/tmp/.created_archive"
 LIBDIR="${SCRIPTDIR}lib/"
 LOGGER="${LIBDIR}logger.sh"
 CREATE="${LIBDIR}create.sh"
+EXTRACT="${LIBDIR}extract.sh"
+DOWNLOAD="${LIBDIR}download.sh"
 TRANSMISSION_RECEIVER="${LIBDIR}receive-transmission.sh"
 
 USAGE="CLIENT COMMANDS : list <server_name> <port>, {create|browse|extract} <server_name> <port> <archive_name>"
@@ -66,7 +68,14 @@ connect () {
 	export PORT=$2
 	export OUTGOING="/tmp/vsh-cli-OUTGOING-$$"
 	export INCOMING="/tmp/vsh-cli-INCOMING-$$"
-	clean() { rm -f "$OUTGOING";rm -f "$INCOMING"; pkill -P $CLI_PID; }
+	clean() { 
+		rm -f "$OUTGOING";rm -f "$INCOMING";
+		pkill -P $CLI_PID; 
+		if test -e "$TEMPARCHIVE" -a -w "$TEMPARCHIVE"
+		then
+			rm "$TEMPARCHIVE"
+		fi
+	}
 	[ -e $OUTGOING ] || mknod "$OUTGOING" p
 	[ -e $INCOMING ] || mknod "$INCOMING" p
 	trap clean EXIT
@@ -171,7 +180,40 @@ browse () {
 }
 
 extract () {
-	echo "T0D0 : Extract $1 of $SERVER in $(pwd)."
+	distant_archive=$1
+	archive_exists "$1" < "$INCOMING"
+	if test $? -eq 0 #downloading archive and echoing server messages
+	then
+		echo "extract $distant_archive $(pwd)" >&3
+		while read -r line #output loop
+		do
+			if [ "$line" == "$EOT_SIGNAL" ]
+			then
+				break
+			elif [ "$line" == "$PROMPT_SIGNAL" ]
+			then
+				read linescount < "$INCOMING"
+				"$DOWNLOAD" "$TEMPARCHIVE" "$linescount"
+			else
+				echo "$line"
+			fi
+		done < "$INCOMING"
+	fi
+	
+	if test -e "$TEMPARCHIVE"
+	then
+		if test -r "$TEMPARCHIVE"
+		then
+			"$EXTRACT" "$TEMPARCHIVE"
+		else
+			"$LOGGER" error "Could not extract the archive"
+			echo "Try running as root."
+		fi
+	else
+		"$LOGGER" error "Could not receive distant archive's information"
+	fi
+	sleep 0.05
+	disconnect
 }
 
 check-too-many-args () {

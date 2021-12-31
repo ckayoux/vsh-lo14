@@ -46,6 +46,12 @@ else
     exit -1
 fi
 
+if test "$USER" == "root"
+then
+    owner="$(logname)" #files should be owned by the user calling the script if they run it using sudo
+    ownergrp="$(groups $owner |awk '{print $NF}')"
+fi
+
 firstline=`sed -n 1p "$ARCHIVE"`
 HEADERSTART=`echo "$firstline" |cut -d":" -f1`
 HEADEREND=`echo "$firstline" |cut -d":" -f2`
@@ -82,3 +88,8 @@ do
         chmod u=$u,g=$g,o=$o "$path"
     fi
 done < <(tail +$HEADERSTART "$ARCHIVE" |head -$HEADERLEN)
+ROOTDIR=".$("$GETROOTDIR" "$ARCHIVE" |tr '\\' '/')"
+if test "$USER" == "root"
+    then
+        chown -R "$owner:$ownergrp" "$ROOTDIR" #chowning every extracted file/directory to the client
+    fi

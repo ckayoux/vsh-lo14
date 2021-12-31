@@ -145,14 +145,29 @@ create () {
 browse () {
 	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
 	aname=`basename "$apath" ".$ARCHIVESEXT"`
-	echo "$aname" >> "$MUTEXFILE"
+	echo "$aname" >> "$MUTEXFILE" #prevent two users from browsing simultaneously
 	"$BROWSE" "$local_archive_path"
 	sed -i '/^'"$aname"'$/d' "$MUTEXFILE"
 	echo "$EOT_SIGNAL"
 }
 
 extract () {
-	echo "T0D0 : extract archive $1."
+	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
+	shift
+	extraction_path="$*"
+	aname=`basename "$apath" ".$ARCHIVESEXT"`
+	echo "$aname" >> "$MUTEXFILE" #prevent an user from browsing while archive is being posted to 
+
+	echo "$PROMPT_SIGNAL"
+	cat "$local_archive_path"|wc -l #sending line count of archive to prepare the download ...
+	while read -r line #sending archive content
+	do
+		printf "%s\n" "$line"
+	done < "$local_archive_path"
+	echo "Extracting archive $aname at '$extraction_path' ..." 
+
+	sed -i '/^'"$aname"'$/d' "$MUTEXFILE"
+	echo "$EOT_SIGNAL"
 }
 
 clean() { 
