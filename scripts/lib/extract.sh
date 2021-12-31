@@ -90,6 +90,7 @@ do
 done < <(tail +$HEADERSTART "$ARCHIVE" |head -$HEADERLEN)
 ROOTDIR=".$("$GETROOTDIR" "$ARCHIVE" |tr '\\' '/')"
 if test "$USER" == "root"
-    then
-        chown -R "$owner:$ownergrp" "$ROOTDIR" #chowning every extracted file/directory to the client
-    fi
+then
+    chown -R "$owner:$ownergrp" "$ROOTDIR" #chowning every extracted file/directory to the client
+    echo -e "\nScript ran as root !\nOwnership of $(readlink -f "$ROOTDIR")\nGranted to :\n\tUser\t→\t$owner\n\tGroup\t→\t$ownergrp"
+fi

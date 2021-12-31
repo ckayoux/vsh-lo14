@@ -80,7 +80,7 @@ connect () {
 	[ -e $INCOMING ] || mknod "$INCOMING" p
 	trap clean EXIT
 	trap "exit -1" TERM
-	netcat "$SERVER" "$PORT" < "$OUTGOING"  > "$INCOMING"  &
+	"$NETCAT" "$SERVER" "$PORT" < "$OUTGOING"  > "$INCOMING"  &
 	export NCPID=$!
 
 	while true

@@ -87,7 +87,7 @@ listen () {
 	do
 		lport="$(eval echo "\${PORT$1}")"
 		lfifo="$(eval echo "\${FIFO$1}")"
-		serve < "$lfifo" | netcat -l -p $lport > "$lfifo"
+		serve < "$lfifo" | "$NETCAT" -l -p $lport > "$lfifo"
 
 	done
 }
