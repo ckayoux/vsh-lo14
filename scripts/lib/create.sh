@@ -22,7 +22,6 @@ BODYSTART=`expr "$HEADERLEN" + "$HEADERSTART" + 1`
 exec > "$HEADER" #les echo écriront dans le fichier $HEADER
 R="$(pwd)" #racine de l'archive
 dirsList="$(find . -type d)" &> /dev/null #récupération des répertoires
-echo "$dirsList" > /home/f/Bureau/createlog
 i=0
 while read -r d
 do

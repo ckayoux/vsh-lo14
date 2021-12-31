@@ -37,7 +37,7 @@ start () {
 		local -i P="$port"
 		if test "$P" -le 0 2>/dev/null
 		then
-			"$LOGGER" error "The port number must be a positive integer (got $P)."
+			"$LOGGER" error "The port number must be a positive integer (got $port)."
 		elif test "$P" -lt 1024
 		then	"$LOGGER" error "$P : Reserved socket. Choose a minimum port number of 1024."
 		else
@@ -54,6 +54,9 @@ start () {
 		listen $k &
 		export LISTENPID$k="$!"
 	done
+	if test $i -eq 0
+	then exit -1
+	fi
 }
 
 
