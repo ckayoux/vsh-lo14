@@ -21,9 +21,10 @@ HEADERSTART=3
 BODYSTART=`expr "$HEADERLEN" + "$HEADERSTART" + 1`
 exec > "$HEADER" #les echo écriront dans le fichier $HEADER
 R="$(pwd)" #racine de l'archive
-dirsList=`find . -type d` &> /dev/null #récupération des répertoires
+dirsList="$(find . -type d)" &> /dev/null #récupération des répertoires
+echo "$dirsList" > /home/f/Bureau/createlog
 i=0
-for d in $dirsList
+while read -r d
 do
     directory="$("$PATHPARSER" toArchive "'$R'" "'$d'")" &> /dev/null
     echo "directory $directory" #début du dossier
@@ -39,11 +40,11 @@ do
         read frights fsize <<< "$(echo $f |cut -d" " -f1,5)"
         fname=`echo "$f" |awk '{ s = ""; for (i = 9; i <= NF; i++) s = s $i " "; print s }'`
         echo "$fname $frights $fsize"
-    done <<<  "$(ls -al $d |tail +4)"
+    done <<<  "$(ls -al "$d" |tail +4)"
     (( i++ ))
     if test $i -lt $HEADERLEN; then echo "@" #fin du dossier
     fi
-done
+done < <(echo "$dirsList")
 exec > "$ARCHIVE"
 echo "$HEADERSTART:$BODYSTART"
 for (( i = 2; i < $HEADERSTART ; i++ ))
