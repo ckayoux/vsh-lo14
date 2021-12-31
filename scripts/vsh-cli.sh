@@ -2,7 +2,7 @@
 SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/"
 LAUNCHER="${SCRIPTDIR}vsh.sh"
 ARCHIVESDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/archives" &> /dev/null && pwd )"
-TEMPARCHIVE="/tmp/.created_archive"
+TEMPARCHIVE="/tmp/.temp_archive"
 
 LIBDIR="${SCRIPTDIR}lib/"
 LOGGER="${LIBDIR}logger.sh"
