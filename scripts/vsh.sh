@@ -1,9 +1,15 @@
 #!/bin/bash
 SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/"
 LIBDIR="${SCRIPTDIR}lib/"
+CHECK_DEPENDENCIES="${LIBDIR}dependencies.sh"
 LOGGER="${LIBDIR}logger.sh"
 VSH_SERVER="${SCRIPTDIR}vsh-server.sh"
 VSH_CLI="${SCRIPTDIR}vsh-cli.sh"
+
+"$CHECK_DEPENDENCIES"
+if test $? -ne 0
+then exit -1
+fi
 
 parse-args () {
 	CMD=`echo "$1" |sed 's/-\?\([a-zA-Z]\)/\1/'` #transforms -cmd into cmd if there is a '-' 

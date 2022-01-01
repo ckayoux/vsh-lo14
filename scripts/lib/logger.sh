@@ -15,6 +15,14 @@ error () {
     fi
 }
 
+missing () {
+    if test -n "$1"
+    then
+        echo "Missing dependency : $1"
+    fi
+}
+
+
 unknown-command-error () {
     error "Unknown command"
 }

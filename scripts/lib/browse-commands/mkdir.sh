@@ -9,6 +9,14 @@ GETCONTENT="${LIB_DIR}/fsutils/getcontent.sh"
 
 LOGGER="${LIB_DIR}/logger.sh"
 
+CHECK_DEPENDENCIES="${LIB_DIR}/dependencies.sh"
+
+"$CHECK_DEPENDENCIES"
+if test $? -ne 0
+then exit -1
+fi
+
+
 DEFAULTRIGHTS="drwxr-xr-x"
 
 ARCHIVE="$1"
@@ -155,7 +163,7 @@ do
                     awkcommand='( NR>='$HEADERSTART' && NR<='$HEADEREND' && ($0 ~ /^.* +[^d][rwx\-]{9} [0-9]+ [0-9]+ [0-9]+/) ) {for (i=1;i<=NF-2; i++) {if(i!=NF-4) printf "%s ",$i; else printf "%s  ",$i};newstart=$(NF-1)+3;printf ("%d %s\n",newstart,$NF);}
                                 ( NR>='$HEADERSTART' && NR<='$HEADEREND' && ($0 !~ /^.* +[^d][rwx\-]{9} [0-9]+ [0-9]+ [0-9]+/) ) {print}
                                 ( ! (NR>='$HEADERSTART' && NR<='$HEADEREND') ) {print}'
-                    echo "$(awk -F' ' "$awkcommand" "$ARCHIVE")" > "$ARCHIVE" #adding 3 to each file's line start
+                    echo "$(gawk -F' ' "$awkcommand" "$ARCHIVE")" > "$ARCHIVE" #adding 3 to each file's line start
                 fi
             fi
         fi
