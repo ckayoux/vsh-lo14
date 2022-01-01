@@ -35,6 +35,7 @@ then
 	echo -n
 else
 	mkdir "$( dirname -- "${BASH_SOURCE[0]}" )/archives/"
+	ARCHIVESDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/archives/" &> /dev/null && pwd )"
 fi
 
 start () {
