@@ -30,6 +30,13 @@ then
 	fi
 fi
 
+if test -e "$ARCHIVESDIR"
+then
+	echo -n
+else
+	mkdir "$( dirname -- "${BASH_SOURCE[0]}" )/archives/"
+fi
+
 start () {
 	i=0
 	while read port
@@ -98,7 +105,6 @@ listen () {
 archive_exists () {
 	apath="$ARCHIVESDIR/$1.$ARCHIVESEXT"
 	aname=`basename "$apath" ".$ARCHIVESEXT"`
-	cat $MUTEXFILE |grep '^'"$aname"'$' >> /home/f/Bureau/testestest
 	mutex="$(cat $MUTEXFILE |grep '^'"$aname"'$')"
 	if test -e "$apath"
 	then
