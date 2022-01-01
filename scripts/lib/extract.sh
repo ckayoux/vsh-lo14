@@ -84,7 +84,7 @@ do
             mkdir -p "$path"
         fi
         #attribute rights
-        read -r u g o <<< "$(echo "${rights:0:3} ${rights:3:3} ${rights:6:3}" )"
+        read -r u g o <<< "$(echo "${rights:0:3} ${rights:3:3} ${rights:6:3}" |tr -d "-")"
         chmod u=$u,g=$g,o=$o "$path"
     fi
 done < <(tail +$HEADERSTART "$ARCHIVE" |head -$HEADERLEN)

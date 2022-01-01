@@ -9,9 +9,5 @@ fi
 
 if test "$WD"!=''
 then
-    if test "$ROOTDIR"!=''
-    then
-        sedFriendlyROOTDIR="$(echo "${ROOTDIR}" |awk '{gsub(/\\/,"\\\\");print}')" 
-        echo "$WD" |sed 's/'"${sedFriendlyROOTDIR}"'/\\/'
-    fi
+    echo "${WD:`expr "${#ROOTDIR}" - 1`}"
 fi

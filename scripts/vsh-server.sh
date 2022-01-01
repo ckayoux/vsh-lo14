@@ -116,7 +116,7 @@ archive_exists () {
 			echo "$EOT_SIGNAL"
 		fi
 	else
-		publicip=`curl -s api.ipify.org`
+		publicip=`curl -s api.ipify.org 2> /dev/null` 
 		if test -n "$publicip" -a $? -eq 0
 		then
 			"$LOGGER" error "Archive '$aname' doesn't exist on $publicip"
