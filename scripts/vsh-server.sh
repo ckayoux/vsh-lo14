@@ -56,13 +56,20 @@ start () {
 		fi
 	done < <(sed 's/ /\n/g' <<< "$*")
 	export PORTSNUMBER=$i
+	listening=0
 	for ((k=1;k<=$PORTSNUMBER;k++))
-	do
-		echo "listening on $(eval echo "\${PORT$k}")"'...'
-		listen $k &
-		export LISTENPID$k="$!"
+	do	
+		if test -z "$(ss  -tulpn |grep 'LISTEN\s\+\([0-9]\s\+\)\{2\}0.0.0.0:'"$(eval echo "\${PORT$k}")" )"
+		then
+			echo "Listening on $(eval echo "\${PORT$k}")"'...'
+			listen $k &
+			((listening++))
+			export LISTENPID$k="$!"
+		else
+			"$LOGGER" error "$(eval echo "\${PORT$k}") is already in use"
+		fi
 	done
-	if test $i -eq 0
+	if test $listening -eq 0
 	then exit -1
 	fi
 }
@@ -98,8 +105,7 @@ listen () {
 	do
 		lport="$(eval echo "\${PORT$1}")"
 		lfifo="$(eval echo "\${FIFO$1}")"
-		serve < "$lfifo" | "$NETCAT" -l -p $lport > "$lfifo"
-
+		serve < "$lfifo" | "$NETCAT" -l -p $lport > "$lfifo" 2> /dev/null
 	done
 }
 
@@ -190,7 +196,6 @@ clean() {
 		rm "$MUTEXFILE"
 		for ((k=1;k<=$PORTSNUMBER;k++))
 		do
-			#kill -9 "$(eval echo \$LISTENPID$k)" > /dev/null
 			fuser -k "$(eval echo "\${PORT$k}")"/tcp > /dev/null 2>&1
 			rm -f "$(eval echo "\${FIFO$k}")"
 		done	

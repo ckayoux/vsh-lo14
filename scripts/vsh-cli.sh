@@ -100,6 +100,8 @@ connect () {
 	done &
 
 	exec 3> "$OUTGOING"
+	exec 33< "$INCOMING" 2> /dev/null #Had to do that to make archive_exists work on Ubuntu, for some reasons ...
+	#Apparently, accessing the fifo with no permission prevents it from blocking later on ...
 }
 
 archive_exists () {
