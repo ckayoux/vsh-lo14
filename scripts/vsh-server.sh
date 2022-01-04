@@ -17,6 +17,8 @@ PROMPT_SIGNAL="( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)"
 
 MUTEXFILE="/tmp/vsh-server-$$-MUTEX"
 
+publicip=`curl -s api.ipify.org 2> /dev/null`
+
 NETCAT="netcat"
 which $NETCAT >/dev/null
 if test $? -ne 0
@@ -122,7 +124,6 @@ archive_exists () {
 			echo "$EOT_SIGNAL"
 		fi
 	else
-		publicip=`curl -s api.ipify.org 2> /dev/null` 
 		if test -n "$publicip" -a $? -eq 0
 		then
 			"$LOGGER" error "Archive '$aname' doesn't exist on $publicip"
@@ -133,13 +134,31 @@ archive_exists () {
 }
 
 list () {
-	echo -e "\nAvailable archives :"
+	if test -n "$publicip"
+		then echo -e "\nArchives of $publicip :"
+		else echo -e "\nAvailable archives :"
+	fi
 	echo "-------------------------------------------"
-	while IFS= read archive
+	readArchivesCount=0
+	while IFS= read -r archive
 	do
-		aname=`basename "$archive" ".$ARCHIVESEXT"`
-		printf " + %s\n" "$aname"
-	done <<< `ls "$ARCHIVESDIR" |grep "\([a-z]\+\.$ARCHIVESEXT\)$"`
+		if test -n "$archive"
+		then
+			aname=`basename "$archive" ".$ARCHIVESEXT"`
+			inUse="$(cat $MUTEXFILE |grep '^'"$aname"'$')"
+			printf " + %s" "$aname"
+			if test -n "$inUse"
+			then
+				echo -e "\t\t(already in use)"
+			fi
+			echo
+			((readArchivesCount++))
+		fi	
+	done <<< "$(ls "$ARCHIVESDIR" |grep "\([a-z]\+\.$ARCHIVESEXT\)$")"
+	if test "$readArchivesCount" -eq 0
+	then
+		"$LOGGER" error "No archives were found on this server"
+	fi
 	echo "$EOT_SIGNAL"
 }
 
