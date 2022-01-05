@@ -87,7 +87,7 @@ serve() {
 	#else 
 	#	"$LOGGER" 'unknown-command-error'
 	#fi
-	while [[ $iteration -eq 1 || "$lastcmd" = "archive_exists" ]]
+	while [[ $iteration -eq 1 || "$lastcmd" == "archive_exists" ]]
 	read cmd archive || exit -1 
 	do
 		if [ `type -t $cmd` == 'function' ]
