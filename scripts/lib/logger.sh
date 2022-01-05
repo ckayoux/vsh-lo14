@@ -18,7 +18,7 @@ error () {
 missing () {
     if test -n "$1"
     then
-        echo "Missing dependency : $1"
+        error "Missing dependency : $1"
     fi
 }
 
