@@ -152,7 +152,7 @@ list () {
 			printf " + %s" "$aname"
 			if test -n "$inUse"
 			then
-				echo -e "\t\t(already in use)"
+				echo -en "\t\t(already in use)"
 			fi
 			echo
 			((readArchivesCount++))
