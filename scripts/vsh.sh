@@ -40,7 +40,12 @@ parse-args () {
 					PORTS="$p"
 				fi
 			done
-			"$VSH_SERVER" "$PORTS";;
+			if test -z "$PORTS"
+			then
+				echo "USAGE : `basename $0` -listen <(port|port-range)...>"
+			else
+				"$VSH_SERVER" "$PORTS"
+			fi;;
 
 		'list' | 'create' | 'browse' | 'extract')
 			"$VSH_CLI" $CMD "$ARGS";;
