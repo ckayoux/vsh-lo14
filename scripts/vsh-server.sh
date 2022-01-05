@@ -3,7 +3,7 @@ SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/
 ARCHIVESDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )/archives/" &> /dev/null && pwd )"
 TEMPARCHIVE="${ARCHIVESDIR}/.created_archive"
 ARCHIVESEXT="sos"
-USAGE="USAGE : $( basename $0 ) <port-number...>"
+USAGE="USAGE : $( basename $0 ) <(port|ports-range)...>"
 
 LIBDIR="${SCRIPTDIR}lib/"
 LOGGER="${LIBDIR}logger.sh"
@@ -44,6 +44,9 @@ start () {
 	i=0
 	while read port
 	do
+		if test -z "$port"
+		then echo "$USAGE"; break
+		fi
 		local -i P="$port"
 		if test "$P" -le 0 2>/dev/null
 		then
