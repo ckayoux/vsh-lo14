@@ -20,14 +20,14 @@ MUTEXFILE="/tmp/vsh-server-$$-MUTEX"
 publicip=`curl -s api.ipify.org 2> /dev/null`
 
 NETCAT="netcat"
-which $NETCAT >/dev/null
+which $NETCAT > /dev/null 2>&1
 if test $? -ne 0
 then
 	NETCAT="nc"
-	which $NETCAT >/dev/null
+	which $NETCAT > /dev/null 2>&1
 	if test $? -ne 0
 	then
-		"$LOGGER" 'Could not find a netcat executable on your system.'
+		"$LOGGER" error 'Could not find a netcat executable on your system.'
 		exit 1
 	fi
 fi
