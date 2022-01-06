@@ -19,6 +19,8 @@ MUTEXFILE="/tmp/vsh-server-$$-MUTEX"
 
 publicip=`curl -s api.ipify.org 2> /dev/null`
 
+SERVERPID=$$
+
 NETCAT="netcat"
 which $NETCAT > /dev/null 2>&1
 if test $? -ne 0
@@ -67,8 +69,8 @@ start () {
 		if test -z "$(ss  -tulpn |grep 'LISTEN\s\+\([0-9]\s\+\)\{2\}0.0.0.0:'"$(eval echo "\${PORT$k}")" )"
 		then
 			echo "Listening on $(eval echo "\${PORT$k}")"'...'
-			listen $k &
 			((listening++))
+			listen $k &
 			export LISTENPID$k="$!"
 		else
 			"$LOGGER" error "$(eval echo "\${PORT$k}") is already in use"
@@ -93,7 +95,8 @@ serve() {
 	while [[ $iteration -eq 1 || "$lastcmd" == "archive_exists" ]]
 	read cmd archive || exit -1 
 	do
-		if [ `type -t $cmd` == 'function' ]
+		type=`type -t "$cmd"`
+		if [[ -n "$type" && "$type" == 'function' ]]
 		then
 			$cmd $archive
 		else 
@@ -167,15 +170,20 @@ list () {
 
 create () {
 	local_archive_path="$ARCHIVESDIR/$1.$ARCHIVESEXT"
-	local_archive_name=`basename "$1" ".$ARCHIVESEXT"`
-	echo "creating $1"
-	read linescount #client sends the archive size in lines
-	"$DOWNLOAD" "$local_archive_path" $linescount
-	if [[ $? -eq 0 ]]
-	then
-		echo "Archive '$local_archive_name' has been created successfully." #afficher ce message au client
+	aname=`basename "$1" ".$ARCHIVESEXT"`
+	mutex="$(cat $MUTEXFILE |grep '^'"$aname"'$')"
+	if test -n "$mutex"
+	then "$LOGGER" error "$aname is already being browsed by another user"
 	else
-		"$LOGGER" error "Error creating archive '$local_archive_name'"
+		echo "creating $1"
+		read linescount #client sends the archive size in lines
+		"$DOWNLOAD" "$local_archive_path" $linescount
+		if [[ $? -eq 0 ]]
+		then
+			echo "Archive '$aname' has been created successfully." #afficher ce message au client
+		else
+			"$LOGGER" error "Error creating archive '$aname'"
+		fi
 	fi
 	echo "$EOT_SIGNAL"
 }
@@ -215,12 +223,17 @@ extract () {
 }
 
 clean() { 
-		rm "$MUTEXFILE"
+		echo "Shutting down the server..."
+		pkill -P "$SERVERPID"
+		if test -e "$MUTEXFILE"
+		then rm "$MUTEXFILE" 2> /dev/null
+		fi
 		for ((k=1;k<=$PORTSNUMBER;k++))
 		do
 			fuser -k "$(eval echo "\${PORT$k}")"/tcp > /dev/null 2>&1
 			rm -f "$(eval echo "\${FIFO$k}")"
-		done	
+		done
+		exit 0
 }
 
 if test $# -eq 0	
@@ -229,16 +242,14 @@ then
 else
 	touch "$MUTEXFILE"
 	PORTSNUMBER=$#
-	trap clean EXIT
+	trap clean INT
 	start "$*"
 	echo -e "\nType in 'stop' to shut the server down."
 	while read stop
 	do
 		if [ "$stop" == "stop" ]
 		then
-			echo "Shutting down the server..."
-			pkill -P $$
-			exit
+			clean
 		fi
 	done
 fi
